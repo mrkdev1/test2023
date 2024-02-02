@@ -1,0 +1,18 @@
+
+
+
+redocly build-docs draft-openapi.yaml --theme.openapi.disableSearch --theme.openapi.hideDownloadButton
+
+
+redocly build-docs draft-openapi.yaml 
+
+---commands---
+
+https://redocly.com/docs/redoc/config/
+
+https://redocly.com/docs/cli/commands/build-docs/
+
+
+---------------
+
+

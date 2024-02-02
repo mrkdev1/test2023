@@ -1,0 +1,1322 @@
+openapi: 3.0.1
+info:
+  description: This is an example for documenting an OpenAPI. The example API converts street address to latitude and longitude.
+  title: Map Nearby Clean Up Sites API  
+x-components: {}
+tags:
+  - name: Objective
+    description: 
+      $ref: '#/comments/preliminary/Objectives'     
+  - name: Prerequisites
+    description:
+      $ref: '#/comments/preliminary/Prerequisites'
+  - name: Specify a Neighborhood
+    description: Specifies a address at center and radius.  
+  - name: Find Clean-Up Sites
+    description: Feature for gathering waste site infomation.
+  - name: Map Clean-Up Sites
+    description: Feature for managing GitHub gists.
+  - name: Retrieve FeatureCollection
+    description: Retrieves Geojson.
+  - name: Finish Your Map 
+    description: Feature for sharing maps.
+  - name: Edit FeatureCollection Online
+    description: 
+      $ref: '#/comments/edit/Geojsonio'         
+  - name: Update Your Custom Map
+    description: Updates your custom map        
+  - name: Embed your map in a webpage.
+    description: Embeds your map in a webpage.
+  - name: Share the FeatureCollection object.
+    description: Shares the FeatureCollection object.
+  - name: Link to a GitHub repository.
+    description: Link to a GitHub repository.
+  - name: OpenAPI YAML
+    description: Feature for viewing openapi.yaml file online.
+  - name: OpenAPI JSON
+    description: Feature for viewing openapi.yaml file online.
+x-tagGroups:
+  - name: Overview
+    tags:
+      - Objective
+      - Prerequisites
+  - name: Search A Neighborhood 
+    tags:
+      - Specify a Neighborhood
+      - Find Clean-Up Sites
+  - name: Create a Map on GitHub 
+    tags:
+      - Map Clean-Up Sites
+  - name: Customize Your Map  
+    tags:
+      - Retrieve FeatureCollection
+      - Edit FeatureCollection Online
+      - Update Your Custom Map 
+  - name: Share Your Map 
+    tags:
+      - Embed your map in a webpage.
+      - Share the FeatureCollection object.
+      - Link to a GitHub repository.
+      - OpenAPI YAML
+      - OpenAPI JSON
+paths:
+  /address/{query}:
+    servers: 
+    - url: https://geocoding.geo.census.gov/geocoder/locations
+    parameters:
+      - name: state
+        in: query
+        description: This must be WA for a Washington state address. 
+        required: true
+        schema:
+          type: string
+        example:
+          state: WA
+      - name: benchmark
+        in: query
+        description: This must be 2020 to search the 2020 census data. 
+        required: true
+        schema:
+          benchmark: string
+        example:
+          benchmark: 2020
+      - name: format
+        in: query
+        description: This must be json for the response to be in json format. 
+        required: true
+        schema:
+          type: string
+        example:
+          format: json
+      - name: street
+        in: query
+        description: Street address of location at center of search area. Must be formatted as URL encoding. URL encoding replaces special characters or spaces with escape sequences of the form ‘%xx’, where ‘xx’ is a two-digit hexadecimal number which represents the equivalent ASCII character. 
+        required: true
+        schema:
+          type: string
+        examples:
+          example1:
+            value: 13601+SE+20+th+Street
+            summary: URL encoded value for "13601 SE 20 th Street".
+          example2:
+            value: 4600+Silver+Hill+Rd
+            summary: URL encoded value for "4600 Silver Hill Rd".
+      - name: city
+        in: query
+        description: City of location at center of search area. Must be formatted as URL encoding. 
+        required: true
+        schema:
+          type: string
+        example:
+          city: Bellevue
+      - name: zip
+        in: query
+        required: false
+        schema:
+          type: string
+        example:
+          zip: 98005
+    get:
+      summary: Retrieve the coordinates of the search area's center
+      description: Searches the Washington State 2020 census benchmark data for a specified street address and returns the cooresponding geographic coordinates in a json formatted response.  
+                     
+                   
+                   You must specify the street address using the formatted value for {query}.  To make the {query} value, combine the parameters described in the following section using the format of "?state=WA&benchmark=2020&format=json&street={value}&city={value}&zip={value}". Append the {query} string to the base URL. 
+                   
+                   
+                   For example, to search the 2020 census benchmark data for "13601 SE 20th Street, Bellevue, WA, 98805" and receive the coordinates in a json response, the endpoint URL would be "https://geocoding.geo.census.gov/geocoder/locations/address?state=WA&benchmark=2020&format=json&street=13601+SE+20+th+Street&city=Bellevue&zip=98005" 
+      operationId: CoorGet
+      tags:
+        - Specify a Neighborhood
+      responses:
+        200:
+          $ref: '#/components/responses/Location'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalError'
+
+  /api/encoder/{text}:
+    servers: 
+    - url: https://networkcalc.com
+    parameters:
+      - name: text
+        in: path
+        description: Value to encode. 
+        required: true
+        schema:
+          type: string
+        example:
+          - 13601 SE 20th Street
+      - name: decoding
+        in: query
+        description: This value must be url 
+        required: true
+        schema:
+          type: string
+        example:
+          decoding: url
+    get:
+      summary: Encode the text string as url encoding
+      description: Encodes the text string as url encoding 
+      operationId: EncodeGet
+      tags:
+        - Specify a Neighborhood
+      responses:
+        200:
+          $ref: '#/components/responses/EncodeResponse'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalError'
+          
+  /vtkh-65is.geojson?$where={search_location}:
+    servers: 
+    - url: https://data.wa.gov/resource
+    parameters:
+      - name: search_location
+        in: query
+        description: A user defined query to search the vtkh-65is dataset for waste sites located inside a geographic area. Search within a circular region by including $where=within_circle({location, {latitude of center}, {longitude of center}, {radius}) in the url. Geographic coordinates must be in decimal degrees. Radius must be in meters.   
+        required: true
+        schema:
+          type: string
+          format: uuid
+        examples:
+          example1:
+            value: within_circle(location,%2047.59,%20-122.33,%201000)
+            summary: This search_location value will search inside the circular area centered on (47.59 deg latitude and -122.33 deg longiude) and 1000 meters in radius. 
+    get:
+      summary: Retrieve nearby waste sites from the catalog
+      description: Retrieves information and the geographic coordinates for clean-up sites which are near a specific location.  Searches for cleanup sites which have been cataloged by the Washington Department of Ecology (Toxics Cleanup Program) and returns results in the GEOJSON format.
+      operationId: NearbyGet
+      tags:
+        - Find Clean-Up Sites
+      responses:
+        200:
+          $ref: '#/components/responses/Geomap'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalError'
+  /gists:
+    servers: [{url: "https://api.github.com/"}]
+    parameters:
+      - name: Accept
+        in: header
+        description: Accept header
+        required: true
+        schema:
+          type: string
+        example:
+          - "Accept: application/vnd.github+json"
+      - name: Authorization
+        in: header
+        description: authorization header
+        required: true
+        schema:
+          type: string
+        example:
+          - "Authorization: Bearer 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"
+      - name: X-GitHub-Api-Version
+        in: header
+        description: version header
+        required: true
+        schema:
+          type: string
+        example:
+          - "X-GitHub-Api-Version: 2022-11-28"
+    post:
+      summary: Create a new map
+      description: Creates a new map stored as a GitHub Gist.
+      operationId: createGist
+      tags:
+        - Map Clean-Up Sites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Gist'
+            example:
+              $ref: '#/examples/geojson_format/StringyGistObject'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResponse'
+              example:
+                $ref: '#/examples/geojson_format/GistObject'
+        304:
+          $ref: '#/components/responses/NotModified'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/NotValidated'
+        default:
+          $ref: '#/components/responses/InternalError'
+          
+  /gists/{id}:
+    servers: [{url: "https://api.github.com/"}]
+    parameters:
+      - name: id
+        in: path
+        description: unique identifier of the gist.
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example:
+          - 81738b010c20941a0444b5ed2fa4d7cc
+      - name: Accept
+        in: header
+        description: Accept header
+        required: true
+        schema:
+          type: string
+        example:
+          - "Accept: application/vnd.github+json"
+      - name: Authorization
+        in: header
+        description: authorization header
+        required: true
+        schema:
+          type: string
+        example:
+          - "Authorization: Bearer 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"
+      - name: X-GitHub-Api-Version
+        in: header
+        description: version header
+        required: true
+        schema:
+          type: string
+        example:
+          - "X-GitHub-Api-Version: 2022-11-28"
+    get:
+      summary: Retrieve map
+      description: Retrieves a map stored as GitHub Gist
+      operationId: getGist
+      tags:
+        - Map Clean-Up Sites
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResponse'
+              example:
+                $ref: '#/examples/geojson_format/GistObject'
+        304:
+          $ref: '#/components/responses/NotModified'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalError'
+    patch:
+      summary: Update map
+      description: Updates a map stored as GitHub Gist. Files from the previous version of the map that aren't explicitly changed during an edit are unchanged.
+      operationId: patchGist
+      tags:
+        - Map Clean-Up Sites
+        - Update Your Custom Map
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Gist'
+            example:
+              $ref: '#/examples/geojson_format/StringyObject'
+      responses:
+        201:
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResponse'
+              example:
+                $ref: '#/examples/geojson_format/GistObject'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalError'
+    delete:
+      summary: Remove map
+      description: Removes a map stored as GitHub Gist.
+      operationId: deleteGist
+      tags:
+        - Map Clean-Up Sites
+      responses:
+        201:
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResponse'
+              example:
+                $ref: '#/examples/geojson_format/GistObject'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalError'
+          
+  /{login}/(id}/raw/{raw_id}/{filename}:
+    servers: [url: "https://gist.githubusercontent.com//"]
+    parameters:
+      - name: login
+        in: path
+        description: GitHub login id of the map owner.
+        required: true
+        schema:
+          type: string
+        example:
+          - "mrkdev1"
+      - name: id
+        in: path
+        description: unique identifier of the gist.
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example:
+          - 81738b010c20941a0444b5ed2fa4d7cc
+      - name: raw_id
+        in: path
+        description: unique identifier of the raw map file
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example:
+          - be4beca6a93c9afc4d6052376249147adc764a64
+      - name: filename
+        in: path
+        description: The filename of the map file including the extension.
+        required: true
+        schema:
+          type: string
+        example:
+          - "bellevue.geojson"
+      - name: Accept
+        in: header
+        description: Accept header
+        required: true
+        schema:
+          type: string
+        example:
+          - "Accept: application/vnd.github+json"
+      - name: Authorization
+        in: header
+        description: authorization header
+        required: true
+        schema:
+          type: string
+        example:
+          - "Authorization: Bearer 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"
+      - name: X-GitHub-Api-Version
+        in: header
+        description: version header
+        required: true
+        schema:
+          type: string
+        example:
+          - "X-GitHub-Api-Version: 2022-11-28"
+    get:
+      summary: Retrieve published geojson file
+      description: Retrieves published geojson file
+      operationId: getGeojson
+      tags:
+        - Retrieve FeatureCollection 
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapResponse'
+              example:
+                $ref: '#/examples/geojson_format/PublishedObject' 
+        304:
+          $ref: '#/components/responses/NotModified'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalError'
+
+components:
+  overview:
+    Rationale: "This is a string"
+  responses:
+    EncodeResponse:
+      description: Url encoding of text
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Encoded'
+          examples:
+            Encoded street address:
+              value:
+                {
+                  "status": "OK",
+                  "original": "13601 SE 20th Street, Bellevue, WA, 98805",
+                  "encoded": "13601%20SE%2020th%20Street%2C%20Bellevue%2C%20WA%2C%2098805"
+                }
+            example2:
+              value:
+                {
+                  "status": "OK",
+                  "original": "within_circle(location, 47.59, -122.33, 500)",
+                  "encoded": "within_circle(location%2C%2047.59%2C%20-122.33%2C%20500)"
+                }
+    Location:
+      description: Street Address and Coordinates
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Center'
+          examples:
+            Coordinates Found Matching Address:
+              value:
+                {
+                   "result":
+                   {        
+                     "input": {
+                       "address": {
+                         "zip": "98005",
+                         "city": "Bellevue",
+                         "street": "13601 SE 20 th Street",
+                         "state": "WA"
+                       },
+                       "benchmark": {
+                         "isDefault": false,
+                         "benchmarkDescription": "Public Address Ranges - Census 2020 Benchmark",
+                         "id": "2020",
+                         "benchmarkName": "Public_AR_Census2020"
+                         }
+                       },
+                     "addressMatches":
+                     [
+                       {
+                         "coordinates": {
+                           "x": -122.15828982930545,
+                           "y": 47.59237305617987
+                       },
+                         "matchedAddress": "13601 SE 20TH ST, BELLEVUE, WA, 98005"
+                       }
+                     ]
+                   }
+                 }
+            example2:
+              description: Request with an unsuppported query parameter for a collection
+              value:
+                status: 400
+                message: "Unable to get devices: the field 'foo' does not exist"
+    Geomap:
+      description: The geojson file.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/File'
+          examples:
+            example1:
+              description: Lat/Long and street address at center.
+              value: 
+                $ref: '#/examples/geojson_format/CleanUpSites'     
+            example2:
+              description: Request with an unsuppported query parameter for a collection
+              value:
+                status: 400
+                message: "Unable to get devices: the field 'foo' does not exist"
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            example1:
+              description: When a required field is not present on the request body
+              value:
+                message: "Request body has an error: failed to decode request body: part filename: undefined"
+            example2:
+              description: Request with an unsuppported query parameter for a collection
+              value:
+                status: 400
+                message: "Unable to get devices: the field 'foo' does not exist"
+    NotModified:
+      description: Not Modified
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 422
+            message: "resource not modified"
+    NotValidated:
+      description: Not Validated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 304
+            message: "Validation failed"
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 403
+            message: "user not authorized"
+    InternalError:
+      description: Internal Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 500
+            message: "Unable to add path links"
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 404
+            message: "Unable to get device: device with id c9796e86-21f7-4182-be1c-c737ed43024a: not found"
+    NotImplemented:
+      description: Not Implemented
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 501
+            message: "Unable to get device: requested query parameter foo eq bar not implemented for collection items"
+    TaskCreated:
+      description: Task is Created
+      content:
+        application/hal+json:
+          schema:
+            $ref: '#/components/schemas/hal.TaskCreatedResponse'
+          example:
+            _links:
+              self:
+                href: "/v1/discovery-tasks/43b7bd5b-5b61-4a64-8fe4-68ef8ed910f2"
+            path: "/v1/discovery-tasks/43b7bd5b-5b61-4a64-8fe4-68ef8ed910f2"
+  schemas:
+    Encoded:
+      type: object
+      properties:
+        status:
+          type: string
+          description: the status is OK
+        original:
+          type: string
+          description: the original string
+        encoded:
+          type: string
+          description: the url encoded string
+    Center:
+      type: object
+      properties:
+        result:
+          type: object
+          properties:
+            input:
+              type: object
+              properties:
+                zip:
+                  type: string
+                city:
+                  type: string
+                street:
+                  type: string
+                state:
+                  type: string
+            benchmark:
+              type: object
+              properties:
+                isDefault:
+                  type: boolean
+                benchmarkDescription:
+                  type: string
+                id:
+                  type: string
+                benchmarkName:
+                  type: string              
+            addressMatches:
+              type: array
+              items:
+                $ref: '#/components/schemas/Match' 
+    Match:
+      type: object
+      properties:
+        coordinates:
+          type: object
+          description: Geographic coordinates of provided street address.
+          properties:
+            x:
+              type: number
+              description: Longitude
+              format: degrees decimal
+            y:
+              type: number
+              description: Latitude
+              format: degrees decimal
+        matchedAddress:
+          type: string
+          description: The input address which has been matched.
+    File:
+      type: object
+      properties:
+        geojson:
+          type: object
+          description: A json object in the format of a GEOJSON FeatureCollection.
+          properties:
+            type:
+              type: FeatureCollection
+              description: Description of GEOJSON FeatureCollection collection.
+            features:
+              type: array
+              description: Description of an array of features.
+              items:
+                $ref: '#/components/schemas/Feature' 
+    Feature:
+      type: object
+      required:
+        - id
+      properties:
+        type:
+          type: Feature
+          description: Description of GEOJSON Feature object.
+        geometry:
+          type: array
+          description: Description of GEOJSON geometry array.
+          items:
+            $ref: '#/components/schemas/Point'
+        properties:
+          type: object
+          properties:
+            location_state:
+              type: string
+              description: xxx
+            city:
+              type: string
+              description: xxx
+            zipcode:
+              type: string
+              description: xxx
+            location_zip:
+              type: string
+              description: xxx
+            cleanup_site_id:
+              type: string
+              description: xxx
+            latitude:
+              type: string
+              description: xxx
+            has_environmental_covenant:
+              type: string
+              description: xxx
+            county_name:
+              type: string
+            rank:
+              type: string
+              description: xxx
+            location_address:
+              type: string
+              description: xxx
+            responsible_section:
+              type: string
+              description: xxx
+            cleanup_site_name:
+              type: string
+              description: xxx
+            location_city:
+              type: string
+              description: xxx
+            longitude:
+              type: string
+              description: xxx
+            cleanup_status:
+              type: string
+              description: xxx
+            region:
+              type: string
+              description: xxx
+            address:
+              type: string
+              description: xxx
+            facility_site_id:
+              type: string
+              description: xxx
+    Point:
+      type: object
+      required:
+        - id
+      properties:
+        type:
+          type: Point
+        coordinates:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Element'
+    Element:
+      type: object
+      required:
+        - id
+      properties:
+        element:
+          type: Degrees
+    Gist:
+      type: object
+      required:
+        - name
+      properties:
+        description:
+          type: string
+          description: Description of the gist.
+        files:
+          type: object
+          description: Name and content for the files.
+          properties:
+            key:
+              type: object
+              description: A user defined key to represent an item in files.
+              properties:
+                content:
+                  type: string
+                  description: Content of the file.
+        public:
+          type: boolean
+          description: Flag indicating whether the gist is public.
+    MapResponse:
+      type: object      
+      required:
+        - name
+      properties:
+        url:
+          type: string
+          format: uri
+          description: the gist url
+        forks_url:
+          type: string
+          format: uri
+          description: the forks url              
+        commits_url:
+          type: string
+          format: uri
+          description: the commits url              
+        id:
+          type: string
+          description: the gist id              
+        node_id:
+          type: string
+          description: the node id              
+        git_pull_url:
+          type: string
+          format: uri
+          description: the git pull url              
+        git_push_url:
+          type: string
+          format: uri
+          description: the git push url              
+        html_url:
+          type: string
+          format: uri
+          description: the html url              
+        files:
+          type: object
+          description: Name and content for the files.
+          properties:
+            key:
+              type: object
+              description: A user-defined key. This can be the filename including the geojson extension.
+              properties:
+                filename:
+                  type: string
+                  description: the filename including extension
+                type:
+                  type: string
+                  description: the type of data
+                language:
+                  type: string
+                  description: json 
+                raw_url:
+                  type: string
+                  description: the raw url 
+                size:
+                  type: string
+                  description: Size of file in units of xxx.
+                truncated:
+                  type: string
+                  description: The API provides up to one megabyte of content for each file. If truncated is true, the file is too large and only a portion of the contents were returned in content. 
+                content:
+                  type: string
+                  description: Content of the file as a string object.
+        public:
+          type: boolean
+          description: public or secret              
+        created_at:
+          type: string
+          description: time this was created              
+        updated_at:
+          type: string
+          description: time this was updated              
+        description:
+          type: string
+          description: description of this map              
+        comments_url:
+          type: string
+          format: uri
+          description: comments about this map              
+        owner:
+          type: object
+          description: github information about owner of this map
+          properties:
+            login:
+              type: string
+              description: login of owner
+            id:
+              type: string
+              description: id of owner
+            node_id:
+              type: string
+              description: node id of owner
+            avatar_url:
+              type: string
+              description: avatar url of owner
+            gravatar_id:
+              type: string
+              description: gravatar id of owner
+            url:
+              type: string
+              description: url of owner
+            html_url:
+              type: string
+              description: html url of owner
+            followers_url:
+              type: string
+              description: followers url of owner
+            following_url:
+              type: string
+              description: following url of owner
+            gists_url:
+              type: string
+              description: gists url of owner
+            starred_url:
+              type: string
+              description: starred url of owner
+            subscriptions_url:
+              type: string
+              description: subscriptions url of owner
+            organizations_url:
+              type: string
+              description: organizations url of owner
+            repos_url:
+              type: string
+              description: repos url of owner
+            events_url:
+              type: string
+              description: events url of owner
+            received_events_url:
+              type: string
+              description: followers url of owner
+            type:
+              type: string
+              description: type of owner
+            site_admin:
+              type: boolean
+              description: true if owner is site admin                           
+        forks:
+          type: object
+          description: github information about forks of this map            
+        history:
+          type: object
+          description: github information about histry of this map            
+        truncated:
+          type: boolean
+          description: The API provides up to one megabyte of content for each file. If truncated is true, the file is too large and only a portion of the contents were returned in content.              
+    Map:
+      type: object
+      required:
+        - name
+      properties:
+        status:
+          type: integer
+          format: int32
+        message:
+          type: string
+        url:
+          type: string
+          description: the url
+        id:
+          type: string
+          description: The id of the gist with map.
+        html_url:
+          type: string
+          description: The url of the gist with the online map.
+        files:
+          type: object
+          description: Name and content for the files.
+          properties:
+            key:
+              type: object
+              description: The filename including extension.
+              properties:
+                filename:
+                  type: string
+                  description: the filename including extension
+                type:
+                  type: string
+                  description: the type of data
+                language:
+                  type: string
+                  description: json 
+                raw_url:
+                  type: string
+                  description: a raw url 
+                size:
+                  type: string
+                  description: Size of file in units of xxx.
+                truncated:
+                  type: string
+                  description: The API provides up to one megabyte of content for each file. If truncated is true, the file is too large and only a portion of the contents were returned in content. 
+                content:
+                  type: string
+                  description: Content of the file.
+        public:
+          type: boolean
+          description: Flag indicating whether the gist is public.
+    Gistrev:
+      type: object
+      required:
+        - name
+      properties:
+        description:
+          type: string
+          description: The gist files to be updated, renamed, or deleted. Each key must match the current filename (including extension) of the targeted gist file. To delete a file, set the whole file to null. The file will also be deleted if the specified object does not contain at least one of content or filename. 
+        files:
+          type: object
+          description: Name and content for the files.
+          properties:
+            key:
+              type: object
+              description: A user defined key to represent an item in files.
+              properties:
+                content:
+                  type: string
+                  description: Content of the file.
+    Error:
+      required:
+        - status
+        - message
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+examples:
+  geojson_format:
+    CleanUpSites: { "type": "FeatureCollection", "features": [{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.159674,47.585889]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98005","location_zip":null,"cleanup_site_id":"4156","latitude":"47.585889","has_environmental_covenant":null,"county_name":"King","rank":"1 - Highest Assessed Risk","location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"AUTO WORKS MACHINE SCHMITT AUTO KITS CAR","location_city":null,"longitude":"-122.159674","cleanup_status":"No Further Action","region":"Northwest","address":"13547 SE 27TH PL","facility_site_id":"64574557"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.16326,47.58723]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98005","location_zip":null,"cleanup_site_id":"4673","latitude":"47.587230","has_environmental_covenant":null,"county_name":"King","rank":null,"location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"Federal Express Corp BVU","location_city":null,"longitude":"-122.163260","cleanup_status":"No Further Action","region":"Northwest","address":"13301 SE 26TH ST","facility_site_id":"61641888"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.148249,47.598138]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98007","location_zip":null,"cleanup_site_id":"630","latitude":"47.598138","has_environmental_covenant":"Yes","county_name":"King","rank":null,"location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"Grommons Residence","location_city":null,"longitude":"-122.148249","cleanup_status":"No Further Action","region":"Northwest","address":"14209 SE 14TH ST","facility_site_id":"14289714"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.151353,47.596081]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98007","location_zip":null,"cleanup_site_id":"9632","latitude":"47.596081","has_environmental_covenant":null,"county_name":"King","rank":null,"location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"GULL  0268","location_city":null,"longitude":"-122.151353","cleanup_status":"No Further Action","region":"Northwest","address":"1608 145TH PL SE","facility_site_id":"54257465"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.149809,47.596612]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98007","location_zip":null,"cleanup_site_id":"8876","latitude":"47.596612","has_environmental_covenant":null,"county_name":"King","rank":"3 - Moderate Risk","location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"Mobil 99BLV","location_city":null,"longitude":"-122.149809","cleanup_status":"Cleanup Started","region":"Northwest","address":"1500 1510 145TH PL SE","facility_site_id":"36214799"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.164108,47.59201]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98005","location_zip":null,"cleanup_site_id":"6702","latitude":"47.592010","has_environmental_covenant":null,"county_name":"King","rank":null,"location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"R & R NURSERY","location_city":null,"longitude":"-122.164108","cleanup_status":"No Further Action","region":"Northwest","address":"2004 132ND AVE SE","facility_site_id":"81553136"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.154594,47.594071]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98005","location_zip":null,"cleanup_site_id":"9729","latitude":"47.594071","has_environmental_covenant":null,"county_name":"King","rank":null,"location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"Sammamish HS","location_city":null,"longitude":"-122.154594","cleanup_status":"Cleanup Started","region":"Northwest","address":"100 140TH AVE SE","facility_site_id":"56158943"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.151553,47.596391]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98007-5515","location_zip":null,"cleanup_site_id":"6363","latitude":"47.596391","has_environmental_covenant":null,"county_name":"King","rank":null,"location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"SUNSET HILLS MEMORIAL PARK INC","location_city":null,"longitude":"-122.151553","cleanup_status":"No Further Action","region":"Northwest","address":"1575 145TH PL SE","facility_site_id":"59924872"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.150271,47.596294]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98007","location_zip":null,"cleanup_site_id":"6603","latitude":"47.596294","has_environmental_covenant":null,"county_name":"King","rank":null,"location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"UNOCAL 5620","location_city":null,"longitude":"-122.150271","cleanup_status":"No Further Action","region":"Northwest","address":"1607 145TH PL SE","facility_site_id":"74292133"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.164611,47.592444]},"properties":{"location_state":null,"city":"BELLEVUE","zipcode":"98005","location_zip":null,"cleanup_site_id":"4049","latitude":"47.592444","has_environmental_covenant":null,"county_name":"King","rank":null,"location_address":"\"\"","responsible_section":"Northwest","cleanup_site_name":"VIRGIL SMITH PROPERTY","location_city":null,"longitude":"-122.164611","cleanup_status":"No Further Action","region":"Northwest","address":"1823 RICHARDS RD","facility_site_id":"31629726"}}], "crs" : { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } } }   
+    PublishedObject: {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.164108,
+          47.59201
+        ]
+      },
+      "properties": {
+        "location_state": null,
+        "city": "BELLEVUE",
+        "zipcode": "98005",
+        "location_zip": null,
+        "cleanup_site_id": "6702",
+        "latitude": "47.592010",
+        "has_environmental_covenant": null,
+        "county_name": "King",
+        "rank": null,
+        "location_address": "\"\"",
+        "responsible_section": "Northwest",
+        "cleanup_site_name": "R&RNURSERY",
+        "location_city": null,
+        "longitude": "-122.164108",
+        "cleanup_status": "NoFurtherAction",
+        "region": "Northwest",
+        "address": "2004132NDAVESE",
+        "facility_site_id": "81553136"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.154594,
+          47.594071
+        ]
+      },
+      "properties": {
+        "location_state": null,
+        "city": "BELLEVUE",
+        "zipcode": "98005",
+        "location_zip": null,
+        "cleanup_site_id": "9729",
+        "latitude": "47.594071",
+        "has_environmental_covenant": null,
+        "county_name": "King",
+        "rank": null,
+        "location_address": "\"\"",
+        "responsible_section": "Northwest",
+        "cleanup_site_name": "SammamishHS",
+        "location_city": null,
+        "longitude": "-122.154594",
+        "cleanup_status": "CleanupStarted",
+        "region": "Northwest",
+        "address": "100140THAVESE",
+        "facility_site_id": "56158943"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.164611,
+          47.592444
+        ]
+      },
+      "properties": {
+        "location_state": null,
+        "city": "BELLEVUE",
+        "zipcode": "98005",
+        "location_zip": null,
+        "cleanup_site_id": "4049",
+        "latitude": "47.592444",
+        "has_environmental_covenant": null,
+        "county_name": "King",
+        "rank": null,
+        "location_address": "\"\"",
+        "responsible_section": "Northwest",
+        "cleanup_site_name": "VIRGILSMITHPROPERTY",
+        "location_city": null,
+        "longitude": "-122.164611",
+        "cleanup_status": "NoFurtherAction",
+        "region": "Northwest",
+        "address": "1823RICHARDSRD",
+        "facility_site_id": "31629726"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.15828,
+          47.59237
+        ]
+      },
+      "properties": {
+        "city": "BELLEVUE",
+        "zipcode": 98005,
+        "latitude": 47.59237,
+        "county_name": "King",
+        "responsible_section": "Northwest",
+        "longitude": -122.15828,
+        "cleanup_status": "OK",
+        "region": "Northwest",
+        "address": "13601SE20THSTREET",
+        "marker-size": "large",
+        "marker-color": "#3dd33b",
+        "marker-symbol": "star",
+        "site_name": "SkyridgePark@center"
+      }
+    }
+  ]
+}
+    StringyObject: {
+"description":"Example of a gist","public":false,"files":{"bellevue.geojson":{"content":"{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.164108,47.59201]},\"properties\":{\"location_state\":null,\"city\":\"BELLEVUE\",\"zipcode\":\"98005\",\"location_zip\":null,\"cleanup_site_id\":\"6702\",\"latitude\":\"47.592010\",\"has_environmental_covenant\":null,\"county_name\":\"King\",\"rank\":null,\"location_address\":\"\\\"\\\"\",\"responsible_section\":\"Northwest\",\"cleanup_site_name\":\"R&RNURSERY\",\"location_city\":null,\"longitude\":\"-122.164108\",\"cleanup_status\":\"NoFurtherAction\",\"region\":\"Northwest\",\"address\":\"2004132NDAVESE\",\"facility_site_id\":\"81553136\"}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.154594,47.594071]},\"properties\":{\"location_state\":null,\"city\":\"BELLEVUE\",\"zipcode\":\"98005\",\"location_zip\":null,\"cleanup_site_id\":\"9729\",\"latitude\":\"47.594071\",\"has_environmental_covenant\":null,\"county_name\":\"King\",\"rank\":null,\"location_address\":\"\\\"\\\"\",\"responsible_section\":\"Northwest\",\"cleanup_site_name\":\"SammamishHS\",\"location_city\":null,\"longitude\":\"-122.154594\",\"cleanup_status\":\"CleanupStarted\",\"region\":\"Northwest\",\"address\":\"100140THAVESE\",\"facility_site_id\":\"56158943\"}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.164611,47.592444]},\"properties\":{\"location_state\":null,\"city\":\"BELLEVUE\",\"zipcode\":\"98005\",\"location_zip\":null,\"cleanup_site_id\":\"4049\",\"latitude\":\"47.592444\",\"has_environmental_covenant\":null,\"county_name\":\"King\",\"rank\":null,\"location_address\":\"\\\"\\\"\",\"responsible_section\":\"Northwest\",\"cleanup_site_name\":\"VIRGILSMITHPROPERTY\",\"location_city\":null,\"longitude\":\"-122.164611\",\"cleanup_status\":\"NoFurtherAction\",\"region\":\"Northwest\",\"address\":\"1823RICHARDSRD\",\"facility_site_id\":\"31629726\"}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.15828,47.59237]},\"properties\":{\"city\":\"BELLEVUE\",\"zipcode\":98005,\"latitude\":47.59237,\"county_name\":\"King\",\"responsible_section\":\"Northwest\",\"longitude\":-122.15828,\"cleanup_status\":\"OK\",\"region\":\"Northwest\",\"address\":\"13601SE20THSTREET\",\"marker-size\":\"large\",\"marker-color\":\"#3dd33b\",\"marker-symbol\":\"star\",\"site_name\":\"SkyridgePark@center\"}}]}"}}}
+    GistObject: {
+    "url": "https://api.github.com/gists/81738b010c20941a0444b5ed2fa4d7cc",
+    "forks_url": "https://api.github.com/gists/81738b010c20941a0444b5ed2fa4d7cc/forks",
+    "commits_url": "https://api.github.com/gists/81738b010c20941a0444b5ed2fa4d7cc/commits",
+    "id": "81738b010c20941a0444b5ed2fa4d7cc",
+    "node_id": "G_kwDOAKRCZdoAIDgxNzM4YjAxMGMyMDk0MWEwNDQ0YjVlZDJmYTRkN2Nj",
+    "git_pull_url": "https://gist.github.com/81738b010c20941a0444b5ed2fa4d7cc.git",
+    "git_push_url": "https://gist.github.com/81738b010c20941a0444b5ed2fa4d7cc.git",
+    "html_url": "https://gist.github.com/mrkdev1/81738b010c20941a0444b5ed2fa4d7cc",
+    "files": {
+        "bellevue.geojson": {
+            "filename": "bellevue.geojson",
+            "type": "text/plain",
+            "language": "JSON",
+            "raw_url": "https://gist.githubusercontent.com/mrkdev1/81738b010c20941a0444b5ed2fa4d7cc/raw/be4beca6a93c9afc4d6052376249147adc764a64/bellevue.geojson",
+            "size": 2093,
+            "truncated": false,
+            "content": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.164108,47.59201]},\"properties\":{\"location_state\":null,\"city\":\"BELLEVUE\",\"zipcode\":\"98005\",\"location_zip\":null,\"cleanup_site_id\":\"6702\",\"latitude\":\"47.592010\",\"has_environmental_covenant\":null,\"county_name\":\"King\",\"rank\":null,\"location_address\":\"\\\"\\\"\",\"responsible_section\":\"Northwest\",\"cleanup_site_name\":\"R&RNURSERY\",\"location_city\":null,\"longitude\":\"-122.164108\",\"cleanup_status\":\"NoFurtherAction\",\"region\":\"Northwest\",\"address\":\"2004132NDAVESE\",\"facility_site_id\":\"81553136\"}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.154594,47.594071]},\"properties\":{\"location_state\":null,\"city\":\"BELLEVUE\",\"zipcode\":\"98005\",\"location_zip\":null,\"cleanup_site_id\":\"9729\",\"latitude\":\"47.594071\",\"has_environmental_covenant\":null,\"county_name\":\"King\",\"rank\":null,\"location_address\":\"\\\"\\\"\",\"responsible_section\":\"Northwest\",\"cleanup_site_name\":\"SammamishHS\",\"location_city\":null,\"longitude\":\"-122.154594\",\"cleanup_status\":\"CleanupStarted\",\"region\":\"Northwest\",\"address\":\"100140THAVESE\",\"facility_site_id\":\"56158943\"}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.164611,47.592444]},\"properties\":{\"location_state\":null,\"city\":\"BELLEVUE\",\"zipcode\":\"98005\",\"location_zip\":null,\"cleanup_site_id\":\"4049\",\"latitude\":\"47.592444\",\"has_environmental_covenant\":null,\"county_name\":\"King\",\"rank\":null,\"location_address\":\"\\\"\\\"\",\"responsible_section\":\"Northwest\",\"cleanup_site_name\":\"VIRGILSMITHPROPERTY\",\"location_city\":null,\"longitude\":\"-122.164611\",\"cleanup_status\":\"NoFurtherAction\",\"region\":\"Northwest\",\"address\":\"1823RICHARDSRD\",\"facility_site_id\":\"31629726\"}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.15828,47.59237]},\"properties\":{\"city\":\"BELLEVUE\",\"zipcode\":98005,\"latitude\":47.59237,\"county_name\":\"King\",\"responsible_section\":\"Northwest\",\"longitude\":-122.15828,\"cleanup_status\":\"OK\",\"region\":\"Northwest\",\"address\":\"13601SE20THSTREET\",\"marker-size\":\"large\",\"marker-color\":\"#3dd33b\",\"marker-symbol\":\"star\",\"site_name\":\"SkyridgePark@center\"}}]}"
+        }
+    },
+    "public": false,
+    "created_at": "2024-01-17T18:48:35Z",
+    "updated_at": "2024-01-17T19:49:46Z",
+    "description": "Waste sites within 500 meters of Skyridge Park, Bellevue, WA",
+    "comments": 0,
+    "user": null,
+    "comments_url": "https://api.github.com/gists/81738b010c20941a0444b5ed2fa4d7cc/comments",
+    "owner": {
+        "login": "mrkdev1",
+        "id": 10764901,
+        "node_id": "MDQ6VXNlcjEwNzY0OTAx",
+        "avatar_url": "https://avatars.githubusercontent.com/u/10764901?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/mrkdev1",
+        "html_url": "https://github.com/mrkdev1",
+        "followers_url": "https://api.github.com/users/mrkdev1/followers",
+        "following_url": "https://api.github.com/users/mrkdev1/following{/other_user}",
+        "gists_url": "https://api.github.com/users/mrkdev1/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/mrkdev1/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/mrkdev1/subscriptions",
+        "organizations_url": "https://api.github.com/users/mrkdev1/orgs",
+        "repos_url": "https://api.github.com/users/mrkdev1/repos",
+        "events_url": "https://api.github.com/users/mrkdev1/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/mrkdev1/received_events",
+        "type": "User",
+        "site_admin": false
+    },
+    "forks": [],
+    "history": [
+        {
+            "user": {
+                "login": "mrkdev1",
+                "id": 10764901,
+                "node_id": "MDQ6VXNlcjEwNzY0OTAx",
+                "avatar_url": "https://avatars.githubusercontent.com/u/10764901?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/mrkdev1",
+                "html_url": "https://github.com/mrkdev1",
+                "followers_url": "https://api.github.com/users/mrkdev1/followers",
+                "following_url": "https://api.github.com/users/mrkdev1/following{/other_user}",
+                "gists_url": "https://api.github.com/users/mrkdev1/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/mrkdev1/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/mrkdev1/subscriptions",
+                "organizations_url": "https://api.github.com/users/mrkdev1/orgs",
+                "repos_url": "https://api.github.com/users/mrkdev1/repos",
+                "events_url": "https://api.github.com/users/mrkdev1/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/mrkdev1/received_events",
+                "type": "User",
+                "site_admin": false
+            },
+            "version": "67b6180be688c99024caf8ead6fad98b246229ad",
+            "committed_at": "2024-01-17T19:49:46Z",
+            "change_status": {
+                "total": 2,
+                "additions": 1,
+                "deletions": 1
+            },
+            "url": "https://api.github.com/gists/81738b010c20941a0444b5ed2fa4d7cc/67b6180be688c99024caf8ead6fad98b246229ad"
+        },
+        {
+            "user": {
+                "login": "mrkdev1",
+                "id": 10764901,
+                "node_id": "MDQ6VXNlcjEwNzY0OTAx",
+                "avatar_url": "https://avatars.githubusercontent.com/u/10764901?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/mrkdev1",
+                "html_url": "https://github.com/mrkdev1",
+                "followers_url": "https://api.github.com/users/mrkdev1/followers",
+                "following_url": "https://api.github.com/users/mrkdev1/following{/other_user}",
+                "gists_url": "https://api.github.com/users/mrkdev1/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/mrkdev1/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/mrkdev1/subscriptions",
+                "organizations_url": "https://api.github.com/users/mrkdev1/orgs",
+                "repos_url": "https://api.github.com/users/mrkdev1/repos",
+                "events_url": "https://api.github.com/users/mrkdev1/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/mrkdev1/received_events",
+                "type": "User",
+                "site_admin": false
+            },
+            "version": "1454607068eee71c9e9429974e9f1947816a3262",
+            "committed_at": "2024-01-17T18:48:35Z",
+            "change_status": {
+                "total": 1,
+                "additions": 1,
+                "deletions": 0
+            },
+            "url": "https://api.github.com/gists/81738b010c20941a0444b5ed2fa4d7cc/1454607068eee71c9e9429974e9f1947816a3262"
+        }
+    ],
+    "truncated": false
+}
+    StringyGistObject: {"description":"Example of a gist","public":false,"files":{"bellevue.geojson":{"content":"{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.164108,47.59201]},\"properties\":{\"location_state\":null,\"city\":\"BELLEVUE\",\"zipcode\":\"98005\",\"location_zip\":null,\"cleanup_site_id\":\"6702\",\"latitude\":\"47.592010\",\"has_environmental_covenant\":null,\"county_name\":\"King\",\"rank\":null,\"location_address\":\"\\\"\\\"\",\"responsible_section\":\"Northwest\",\"cleanup_site_name\":\"R&RNURSERY\",\"location_city\":null,\"longitude\":\"-122.164108\",\"cleanup_status\":\"NoFurtherAction\",\"region\":\"Northwest\",\"address\":\"2004132NDAVESE\",\"facility_site_id\":\"81553136\"}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.154594,47.594071]},\"properties\":{\"location_state\":null,\"city\":\"BELLEVUE\",\"zipcode\":\"98005\",\"location_zip\":null,\"cleanup_site_id\":\"9729\",\"latitude\":\"47.594071\",\"has_environmental_covenant\":null,\"county_name\":\"King\",\"rank\":null,\"location_address\":\"\\\"\\\"\",\"responsible_section\":\"Northwest\",\"cleanup_site_name\":\"SammamishHS\",\"location_city\":null,\"longitude\":\"-122.154594\",\"cleanup_status\":\"CleanupStarted\",\"region\":\"Northwest\",\"address\":\"100140THAVESE\",\"facility_site_id\":\"56158943\"}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.164611,47.592444]},\"properties\":{\"location_state\":null,\"city\":\"BELLEVUE\",\"zipcode\":\"98005\",\"location_zip\":null,\"cleanup_site_id\":\"4049\",\"latitude\":\"47.592444\",\"has_environmental_covenant\":null,\"county_name\":\"King\",\"rank\":null,\"location_address\":\"\\\"\\\"\",\"responsible_section\":\"Northwest\",\"cleanup_site_name\":\"VIRGILSMITHPROPERTY\",\"location_city\":null,\"longitude\":\"-122.164611\",\"cleanup_status\":\"NoFurtherAction\",\"region\":\"Northwest\",\"address\":\"1823RICHARDSRD\",\"facility_site_id\":\"31629726\"}}],\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"urn:ogc:def:crs:OGC:1.3:CRS84\"}}}"}}}
+
+comments:
+  preliminary:
+    Objectives: "This example is primarily intended to assist technical writers still intermediate in their learning of how to do API documentation. You can think of it as a complement to the many variations of the famous *Pet Shop API* example availabe on the internet. Therefore in the following I assume the reader will already understand what an API is, is familiar with git and GitHub, and can install and run a node.js package from the terminal. Here you can find a few additional examples of how to document APIs that do a little processing of the information being fetched from a database, combine multiple APIs originating from different publishers, and how to deal with legacy APIs.
+
+
+This example cannot be a recipe for creating a cannonical API design, because the range of existing APIs already is too wide to be contained by any single pattern. Instead, I propose this as a reasonable example case to consider because the REST architecture and the Open API specification have become well-established patterns on the web. Its study by both technical writers and engineers could help these diverse roles work together to design and build better APIs.
+
+
+I have written another API example in the hope of saving other technical writers some of the time and effort I had to expend in order to learn basic tools required to write, build, and render even a basic API documentation demo which I could then share with my engineering team. Although the technical details of these methods may seem trivial or awkward to an experienced software engineer, I suggest that early prototyping of documentation, alongside simultaneous code and design, can enable a technical writer to enter into timely conversations with the engineering team about developer experience. These conversations, held over reviews of document protypes, help foster opportunities for writers and engineers and architects to discuss crucial questions about communication. There are basic questions about technical communication, which in my experience, many engineers and architects can also find challenging and non-trivial."
+  
+    Prerequisites: "Introduction:
+        
+    - GitHub Account
+     
+    - Modern Web Browser. Chrome displays the best.  
+     
+    - Text editor such as Notepad++ or BBEdit
+    
+    - node.js
+    
+    - The static page generator package: Redocly CLI
+    
+    - Postman is very helpful for exploring the API
+    
+    "
+  edit:
+    Geojsonio : "To display and manually edit a saved map, you can load the GEOJSON data from the GitHub Gist using the following call to the Geojson.io API:
+    
+    
+   http://geojson.io/#id=gist:{login}}/{id}}
+     
+    
+Where the value of {id} is the id of the gist and the value of {login} is the GitHub user name of the gist owner. The Gist can be public or private, and must contain a file with a .geojson extension that is valid GeoJSON.
+
+
+For example, to edit the map saved at:
+
+
+https://gist.github.com/mrkdev1/81738b010c20941a0444b5ed2fa4d7cc
+
+You would open this URL:
+
+
+http://geojson.io/#id=gist:mrkdev1/81738b010c20941a0444b5ed2fa4d7cc
+
+
+After manually editing the map you can download the modified geojson FeatureCollection object and then use the **Update a saved map** API to patch the saved map."
+    
+     
